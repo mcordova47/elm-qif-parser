@@ -117,52 +117,52 @@ printResult result =
 
 
 printQIFFile : Int -> QIFFile -> String
-printQIFFile indentation qif =
-    String.repeat indentation " "
-        ++ "{ type_ =  \""
-        ++ qif.type_
-        ++ "\"\n"
-        ++ String.repeat indentation " "
-        ++ ", transactions =\n"
-        ++ printList (indentation + 4) printTransaction qif.transactions
+printQIFFile spaces qif =
+    String.repeat spaces " "
+        ++ "{ type_ =  "
+        ++ toString qif.type_
         ++ "\n"
-        ++ String.repeat indentation " "
+        ++ String.repeat spaces " "
+        ++ ", transactions =\n"
+        ++ printList (spaces + 4) printTransaction qif.transactions
+        ++ "\n"
+        ++ String.repeat spaces " "
         ++ "}"
 
 
 printList : Int -> (Int -> a -> String) -> List a -> String
-printList indentation printer list =
-    String.repeat indentation " "
+printList spaces printer list =
+    String.repeat spaces " "
         ++ "[ "
         ++ (list
-                |> List.map (String.trim << indent indentation << printer 2)
-                |> String.join ("\n" ++ String.repeat indentation " " ++ ", ")
+                |> List.map (String.trim << indent spaces << printer 2)
+                |> String.join ("\n" ++ String.repeat spaces " " ++ ", ")
            )
         ++ "\n"
-        ++ String.repeat indentation " "
+        ++ String.repeat spaces " "
         ++ "]"
 
 
 printTransaction : Int -> Quicken.Transaction -> String
-printTransaction indentation transaction =
-    String.repeat indentation " "
+printTransaction spaces transaction =
+    String.repeat spaces " "
         ++ "{ date = "
         ++ toString transaction.date
         ++ "\n"
-        ++ String.repeat indentation " "
+        ++ String.repeat spaces " "
         ++ ", description = "
         ++ toString transaction.description
         ++ "\n"
-        ++ String.repeat indentation " "
+        ++ String.repeat spaces " "
         ++ ", amount = "
         ++ toString transaction.amount
         ++ "\n"
-        ++ String.repeat indentation " "
+        ++ String.repeat spaces " "
         ++ "}"
 
 
 indent : Int -> String -> String
-indent indentation str =
+indent spaces str =
     str
         |> String.lines
-        |> String.join ("\n" ++ String.repeat indentation " ")
+        |> String.join ("\n" ++ String.repeat spaces " ")

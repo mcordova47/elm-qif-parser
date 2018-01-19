@@ -4,9 +4,22 @@ import Parser exposing (Parser, Count(..), (|=), (|.))
 
 
 type alias QIFFile =
-    { type_ : String
+    { type_ : QIFType
     , transactions : List Transaction
     }
+
+
+type QIFType
+    = Bank
+    | Cash
+    | CCard
+    | Invst
+    | OthA
+    | OthL
+    | Account
+    | Cat
+    | Class
+    | Memorized
 
 
 type alias Transaction =
@@ -181,12 +194,30 @@ memoField =
         |= fullLine
 
 
-qifType : Parser String
+qifType : Parser QIFType
 qifType =
     Parser.succeed identity
         |. Parser.ignore Parser.zeroOrMore (charIsIn "\x0D\n")
-        |. Parser.keyword "!Type:"
-        |= fullLine
+        |= Parser.oneOf
+            [ Parser.succeed Bank
+                |. Parser.keyword "!Type:Bank"
+            , Parser.succeed CCard
+                |. Parser.keyword "!Type:CCard"
+            , Parser.succeed Invst
+                |. Parser.keyword "!Type:Invst"
+            , Parser.succeed OthA
+                |. Parser.keyword "!Type:Oth A"
+            , Parser.succeed OthL
+                |. Parser.keyword "!Type:Oth L"
+            , Parser.succeed Account
+                |. Parser.keyword "!Account"
+            , Parser.succeed Cat
+                |. Parser.keyword "!Type:Cat"
+            , Parser.succeed Class
+                |. Parser.keyword "!Type:Class"
+            , Parser.succeed Memorized
+                |. Parser.keyword "!Type:Memorized"
+            ]
 
 
 newLineSymbol : String -> Parser ()
