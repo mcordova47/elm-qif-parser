@@ -83,7 +83,7 @@ view model =
         [ Html.textarea
             [ Attributes.value model.text
             , Attributes.style
-                [ ( "height", "80%" )
+                [ ( "height", "calc(100% - 50px)" )
                 , ( "flex", "1" )
                 , ( "margin", "15px" )
                 ]
@@ -96,7 +96,7 @@ view model =
                 , ( "margin", "15px" )
                 , ( "padding", "6px" )
                 , ( "overflow", "auto" )
-                , ( "height", "80%" )
+                , ( "height", "calc(100% - 50px)" )
                 , ( "background-color", "rgb(254,254,254)" )
                 , ( "border-radius", "6px" )
                 , ( "border", "1px solid rgb(245,245,245)" )
@@ -117,17 +117,66 @@ printResult result =
 
 
 printQIFFile : Int -> QIFFile -> String
-printQIFFile spaces qif =
+printQIFFile =
+    printRecord
+        [ field "type_" (any .type_)
+        , field "transactions"
+            (\n record ->
+                newLine
+                    (printList (n + 4) printTransaction)
+                    record.transactions
+            )
+        ]
+
+
+printTransaction : Int -> Quicken.Transaction -> String
+printTransaction =
+    printRecord
+        [ field "date" (any .date)
+        , field "description" (any .description)
+        , field "amount" (any .amount)
+        ]
+
+
+type alias Field record =
+    { name : String
+    , printer : Int -> record -> String
+    }
+
+
+field : String -> (Int -> record -> String) -> Field record
+field name printer =
+    { name = name
+    , printer = printer
+    }
+
+
+any : (record -> a) -> Int -> record -> String
+any accessor _ =
+    toString << accessor
+
+
+printRecord : List (Field record) -> Int -> record -> String
+printRecord fields spaces record =
     String.repeat spaces " "
-        ++ "{ type_ =  "
-        ++ toString qif.type_
-        ++ "\n"
-        ++ String.repeat spaces " "
-        ++ ", transactions =\n"
-        ++ printList (spaces + 4) printTransaction qif.transactions
+        ++ "{ "
+        ++ (fields
+                |> List.map (printField record spaces)
+                |> String.join ("\n" ++ String.repeat spaces " " ++ ", ")
+           )
         ++ "\n"
         ++ String.repeat spaces " "
         ++ "}"
+
+
+newLine : (a -> String) -> a -> String
+newLine printer value =
+    "\n" ++ printer value
+
+
+printField : record -> Int -> Field record -> String
+printField record spaces { name, printer } =
+    name ++ " = " ++ printer spaces record
 
 
 printList : Int -> (Int -> a -> String) -> List a -> String
@@ -141,24 +190,6 @@ printList spaces printer list =
         ++ "\n"
         ++ String.repeat spaces " "
         ++ "]"
-
-
-printTransaction : Int -> Quicken.Transaction -> String
-printTransaction spaces transaction =
-    String.repeat spaces " "
-        ++ "{ date = "
-        ++ toString transaction.date
-        ++ "\n"
-        ++ String.repeat spaces " "
-        ++ ", description = "
-        ++ toString transaction.description
-        ++ "\n"
-        ++ String.repeat spaces " "
-        ++ ", amount = "
-        ++ toString transaction.amount
-        ++ "\n"
-        ++ String.repeat spaces " "
-        ++ "}"
 
 
 indent : Int -> String -> String
