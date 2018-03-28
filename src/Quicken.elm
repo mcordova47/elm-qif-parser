@@ -154,44 +154,50 @@ transactionField =
 
 dateField : Parser TransactionField
 dateField =
-    Parser.succeed DateField
-        |. newLineSymbol "D"
-        |= fullLine
+    Parser.delayedCommit newline <|
+        Parser.succeed DateField
+            |. Parser.symbol "D"
+            |= fullLine
 
 
 descriptionField : Parser TransactionField
 descriptionField =
-    Parser.succeed DescriptionField
-        |. newLineSymbol "P"
-        |= fullLine
+    Parser.delayedCommit newline <|
+        Parser.succeed DescriptionField
+            |. Parser.symbol "P"
+            |= fullLine
 
 
 amountField : Parser TransactionField
 amountField =
-    Parser.succeed AmountField
-        |. newLineSymbol "T"
-        |= float
+    Parser.delayedCommit newline <|
+        Parser.succeed AmountField
+            |. Parser.symbol "T"
+            |= float
 
 
 clearedStatusField : Parser TransactionField
 clearedStatusField =
-    Parser.succeed ClearedStatusField
-        |. newLineSymbol "C"
-        |= fullLine
+    Parser.delayedCommit newline <|
+        Parser.succeed ClearedStatusField
+            |. Parser.symbol "C"
+            |= fullLine
 
 
 referenceNumberField : Parser TransactionField
 referenceNumberField =
-    Parser.succeed ReferenceNumberField
-        |. newLineSymbol "N"
-        |= fullLine
+    Parser.delayedCommit newline <|
+        Parser.succeed ReferenceNumberField
+            |. Parser.symbol "N"
+            |= fullLine
 
 
 memoField : Parser TransactionField
 memoField =
-    Parser.succeed MemoField
-        |. newLineSymbol "M"
-        |= fullLine
+    Parser.delayedCommit newline <|
+        Parser.succeed MemoField
+            |. Parser.symbol "M"
+            |= fullLine
 
 
 qifType : Parser QIFType
@@ -225,6 +231,14 @@ newLineSymbol symbol =
     Parser.oneOf
         [ Parser.symbol ("\x0D\n" ++ symbol)
         , Parser.symbol ("\n" ++ symbol)
+        ]
+
+
+newline : Parser ()
+newline =
+    Parser.oneOf
+        [ Parser.symbol "\x0D\n"
+        , Parser.symbol "\n"
         ]
 
 
