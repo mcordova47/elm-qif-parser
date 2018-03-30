@@ -143,61 +143,21 @@ transaction =
 transactionField : Parser TransactionField
 transactionField =
     Parser.oneOf
-        [ dateField
-        , descriptionField
-        , amountField
-        , clearedStatusField
-        , referenceNumberField
-        , memoField
+        [ field fullLine DateField "D"
+        , field fullLine DescriptionField "P"
+        , field float AmountField "T"
+        , field fullLine ClearedStatusField "C"
+        , field fullLine ReferenceNumberField "N"
+        , field fullLine MemoField "M"
         ]
 
 
-dateField : Parser TransactionField
-dateField =
+field : Parser a -> (a -> b) -> String -> Parser b
+field parser tagger sym =
     Parser.delayedCommit newline <|
-        Parser.succeed DateField
-            |. Parser.symbol "D"
-            |= fullLine
-
-
-descriptionField : Parser TransactionField
-descriptionField =
-    Parser.delayedCommit newline <|
-        Parser.succeed DescriptionField
-            |. Parser.symbol "P"
-            |= fullLine
-
-
-amountField : Parser TransactionField
-amountField =
-    Parser.delayedCommit newline <|
-        Parser.succeed AmountField
-            |. Parser.symbol "T"
-            |= float
-
-
-clearedStatusField : Parser TransactionField
-clearedStatusField =
-    Parser.delayedCommit newline <|
-        Parser.succeed ClearedStatusField
-            |. Parser.symbol "C"
-            |= fullLine
-
-
-referenceNumberField : Parser TransactionField
-referenceNumberField =
-    Parser.delayedCommit newline <|
-        Parser.succeed ReferenceNumberField
-            |. Parser.symbol "N"
-            |= fullLine
-
-
-memoField : Parser TransactionField
-memoField =
-    Parser.delayedCommit newline <|
-        Parser.succeed MemoField
-            |. Parser.symbol "M"
-            |= fullLine
+        Parser.succeed tagger
+            |. Parser.symbol sym
+            |= parser
 
 
 qifType : Parser QIFType
